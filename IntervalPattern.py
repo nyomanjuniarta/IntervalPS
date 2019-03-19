@@ -26,7 +26,7 @@ class PatternConfig:
 class Pattern:
     def __init__(self, instance=None, dirty=True, config=None, object=-1):
         self.objects = []
-        self.intervals = list()
+        self.intervals = []
         if not config:
             self.cfg = PatternConfig(1)
         else:
