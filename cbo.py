@@ -5,32 +5,43 @@ from IntervalPattern import Pattern, PatternConfig
 patterns = []
 L = []
 G = set()
-
+f_out = 0
 
 def process(A, g, concept):  # see thesis of Kaytoue
-    #print 'process', concept
-    C_minus_A = concept.objects - A
+    C_minus_A = set(concept.objects) - A
     less_than_g = set(filter(lambda x: x < g, C_minus_A))
+    #print 'process', concept.objects
     if len(less_than_g) == 0:
-        L.append(concept)
-        print 'something is added'
-        G_minus_C = G - concept.objects
-        more_than_g = set(filter(lambda x: x > g, G_minus_C))
+        f_out.write(str(concept) + ':' + str(len(concept.objects)) + ':' + str(concept.objects) + '\n')
+        #print 'adding', concept
+        G_minus_C = G - set(concept.objects)
+        more_than_g = set(filter(lambda l: l > g, G_minus_C))
         for f in more_than_g:
             z = set(concept.objects)
             z.add(f)
             new_candidate = concept.intersect(patterns[f])
-            x = closure(new_candidate)
+            x = closure(new_candidate, z)
             new_candidate.objects = x
             process(z, f, new_candidate)
+    else:
+        #print 'backtrack'
+        pass
     return
 
 
-def closure(input_pattern):
-    objects = set()
+def closure(input_pattern, no_check):
+    time1 = time()
+    objects = list(no_check)
+    check = G - no_check
+    for c in check:
+        if input_pattern <= patterns[c]:
+            objects.append(patterns[c].objects[0])
+    '''
     for p in patterns:
         if input_pattern <= p:
-            objects.add(p.objects[0])
+            objects.append(p.objects[0])'''
+    time2 = time()
+    # print len(check), 'compute closure', (time2 - time1)
     return objects
 
 
@@ -42,8 +53,9 @@ if __name__ == "__main__":
     else:
         theta = 1
     cfg = PatternConfig(theta)
-    with open(path, 'r') as f:
-        for object_id, line in enumerate(f):
+    f_out = open('cbo_' + path + '_t' + str(theta) + '.txt', 'w')
+    with open(path, 'r') as f_in:
+        for object_id, line in enumerate(f_in):
             #print 'line', object_id
             raw_entry = line.replace('\n', '').replace('\r', '')
             patterns.append(Pattern(instance=raw_entry, config=cfg, object=object_id))
@@ -53,11 +65,8 @@ if __name__ == "__main__":
         print 'iter', i.objects[0]
         candidate_concept = Pattern(dirty=False, config=cfg)
         candidate_concept.intervals = list(i.intervals)
-        candidate_concept.objects = closure(i)
+        candidate_concept.objects = closure(i, set(i.objects))
         process(set(i.objects), i.objects[0], candidate_concept)
 
-    with open('cbo_' + path + '_t' + str(theta) + '.txt', 'w') as f:
-        for l in L:
-            f.write(str(l) + ':' + str(len(l.objects)) + ':' + str(l.objects) + '\n')
     end_time = time()
     print(end_time - start_time)
