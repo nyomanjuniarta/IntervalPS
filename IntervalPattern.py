@@ -88,7 +88,7 @@ class Pattern:
         output = ''
         for interval in self.intervals:
             if interval[0] > -1000:
-                output += '[' + str(interval[0]) + ',' + str(interval[1]) + ']'
+                output += str(interval[0]) + ',' + str(interval[1]) + '|'
             else:
-                output += '[*]'
-        return output
+                output += '*|'
+        return output[:-1]

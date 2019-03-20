@@ -12,7 +12,7 @@ def process(A, g, concept):  # see thesis of Kaytoue
     less_than_g = set(filter(lambda x: x < g, C_minus_A))
     #print 'process', concept.objects
     if len(less_than_g) == 0:
-        f_out.write(str(concept) + ':' + str(len(concept.objects)) + ':' + str(concept.objects) + '\n')
+        f_out.write(str(concept) + '|' + str(len(concept.objects)) + '|' + str(concept.objects) + '\n')
         #print 'adding', concept
         G_minus_C = G - set(concept.objects)
         more_than_g = set(filter(lambda l: l > g, G_minus_C))

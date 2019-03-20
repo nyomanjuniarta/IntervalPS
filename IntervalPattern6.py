@@ -1,88 +1,90 @@
+from fca.algorithms.cbo import CbO
+from fca.defs import OnDiskPOSET, POSET, SetPattern
 from fca.defs.patterns import IntervalPattern
-from fca.defs import Intent
+
+lst2str = lambda lst: reduce(lambda x, y: str(x)+', '+str(y), lst+['']).strip()[:-1] if len(lst) > 0 else "[]"
 
 
-'''class IntervalPattern(Intent):
+def dict_printer(poset, **kwargs):  # print_support=False, transposed=False, indices=False):
     """
-    Interval pattern as defined by Kaytoue
-    CONVEX HULL: [a,b] \\cap [x,y] = [min(a,x),max(b,y)]
+    Nicely print the concepts in the poset
     """
+    template = kwargs.get('template', '{:4s}\t{:20s}\t{:20s}')
+    transposed = kwargs.get('transposed', False)
+    indices = kwargs.get('indices', False)
+    extent_postproc = kwargs.get('extent_postproc', lst2str)
+    intent_postproc = kwargs.get('intent_postproc', lst2str)
 
-    @classmethod
-    def top(cls, top_rep=None):
-        if cls._top is None:
-            cls._top = []
-        return cls._top
+    ema = poset.EXTENT_MARK
+    ima = poset.INTENT_MARK
+    if transposed:
+        ema = poset.INTENT_MARK
+        ima = poset.EXTENT_MARK
 
-    @classmethod
-    def bottom(cls, bot_rep=None):
-        if cls._bottom is None:
-            cls._bottom = []
-        if bot_rep is not None:
-            if bool(cls._bottom):
-                cls.meet(cls._bottom, bot_rep)
+    order = lambda s: (
+        len(s[1][ema]), s[1][ima]
+    )
+    for i in range(1, len(poset.node)):
+        for interval in poset[i][ima]:
+            if interval[0] > -1000:
+                print interval[0], interval[1], '|',
             else:
-                for i in bot_rep:
-                    cls._bottom.append(i)
-        return cls._bottom
+                print '* |',
+        print len(poset[i][ema]), ':', list(poset[i][ema])
 
-    @classmethod
-    def meet(cls, desc1, desc2):
-        for i, (j, k) in enumerate(zip(desc1, desc2)):
-            desc1[i] = (min(j[0], k[0]), max(j[1], k[1]))
 
-    @classmethod
-    def intersection(cls, desc1, desc2):
-        if desc2 == cls._top:
-            return desc1
-        interval = [(min(i[0], j[0]), max(i[1], j[1])) for i, j in zip(desc1, desc2)]
-        return interval
+class PSCbO(CbO):
+    """
+    Implementation of Close-by-One for pattern structures,
+    It is just a bottom-up enumeration and pattern structures
+    are contained by extents, not intents
+    """
 
-    @classmethod
-    def leq(cls, desc1, desc2):
-        # print desc1, desc2,
-        if desc1==cls._bottom:
-            return True
-        for i, j in zip(desc1, desc2):
-            if i[0] > j[0] or i[1] < j[1]:
-                return False
-        return True
+    def derive_extent(self, descriptions):
+        """
+        Obtain next iteration extent
+        """
+        return reduce(self.e_pattern.intersection, descriptions)
 
-    @classmethod
-    def is_equal(cls, desc1, desc2):
-        if len(desc1) != len(desc2):
-            return False
-        for i, j in zip(desc1, desc2):
-            if i[0] != j[0] or i[1] != j[1]:
-                return False
-        return True
+    def derive_intent(self, *args):
 
-    @classmethod
-    def join(cls, desc1, desc2):
-        if desc1 == cls._top:
-            return True
-        raise NotImplementedError
+        new_extent = args[0]
+        result = set(
+            [m for m, desc in self.ctx.m_prime.items() if m in args[1] or self.e_pattern.leq(new_extent, desc)]
+        )
+        return result
 
-    @classmethod
-    def union(cls, desc1, desc2):
-        raise NotImplementedError
+    def config(self):
+        self.e_pattern = self.pattern
+        self.pattern = SetPattern
 
-    @classmethod
-    def is_empty(cls, desc):
-        return False
+        if not self.ondisk:
+            self.poset = POSET(transformer=self.ctx.transformer)
+        else:
+            self.poset = OnDiskPOSET(transformer=self.ctx.transformer, **self.ondisk_kwargs)
 
-    @classmethod
-    def contains(cls, desc, key):
-        return key in desc
+        map(self.e_pattern.top, self.ctx.g_prime.values())
+        self.all_objects = self.e_pattern.top()
+        self.poset.new_formal_concept(
+            self.e_pattern.top(),
+            self.pattern.bottom(),
+            self.poset.supremum
+        )
+        self.ctx.m_prime = {g: self.e_pattern.fix_desc(desc) for g, desc in self.ctx.g_prime.items()}
+        self.ctx.n_attributes = len(self.ctx.g_prime)
 
-    @classmethod
-    def length(cls, desc):
-        return len(desc)
+        # THE NOTION OF MINIMUM SUPPORT SHOULD NOT BE APPLIED
+        # DIRECTLY TO PATTERN STRUCTURE EXTENTS, SINCE THEY APPLY
+        # ONLY TO SetPattern PATTERN STRUCTURES
+        # IF YOU WANT TO FORCE THEM, UNCOMMENT NEXT LINES
+        '''
+        self.conditions.append(
+            lambda new_extent: len(new_extent) >= self.min_sup * self.ctx.n_objects
+        )
+        '''
 
-    @classmethod
-    def get_iterator(cls, desc):
-        for interval in desc:
-            yield interval'''
+    def run(self, *args, **kwargs):
+        self.cbo(self.poset.supremum, self.e_pattern.top(), self.pattern.bottom())
 
 
 class MaxLengthIntervalPattern(IntervalPattern):
@@ -101,7 +103,6 @@ class MaxLengthIntervalPattern(IntervalPattern):
         if not, put * in the interval > THETA
         """
         # print desc1, desc2,'::',
-        print 'new_interval'
         if desc1 == cls._top:
             return desc2
         new_interval = []

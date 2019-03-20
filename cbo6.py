@@ -17,9 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from __future__ import print_function
 import argparse
-from IntervalPattern6 import MaxLengthIntervalPattern
-from fca.algorithms import dict_printer
-from fca.algorithms.cbo import PSCbO
+from IntervalPattern6 import MaxLengthIntervalPattern, dict_printer, PSCbO
 from fca.io.transformers import List2IntervalsTransformer
 from fca.io.input_models import FormalContextModel
 from time import time
@@ -34,7 +32,7 @@ def exec_ex6(filepath, theta):
     """
     fctx = FormalContextModel(filepath=filepath, transformer=List2IntervalsTransformer(int))
     MaxLengthIntervalPattern.THETA = theta
-    dict_printer(PSCbO(fctx, pattern=MaxLengthIntervalPattern, lazy=False).poset, transposed=True)
+    dict_printer(PSCbO(fctx, pattern=MaxLengthIntervalPattern, lazy=False, silent=False).poset, transposed=True)
 
 
 if __name__ == '__main__':
