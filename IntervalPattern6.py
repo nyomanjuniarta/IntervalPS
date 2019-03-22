@@ -100,20 +100,27 @@ class MaxLengthIntervalPattern(IntervalPattern):
     def intersection(cls, desc1, desc2):
         """
         Each interval should be at most of length THETA
-        if not, put * in the interval > THETA
+        if not, put (-1000, 1000)
         """
         # print desc1, desc2,'::',
         if desc1 == cls._top:
             return desc2
         new_interval = []
         bottom = False
+
+        col_count = 0
         for i, j in zip(desc1, desc2):
             #new_interval.append((min(i[0], j[0]), max(i[1], j[1])))
             if max(i[1], j[1]) - min(i[0], j[0]) > MaxLengthIntervalPattern.THETA:
                 #bottom = True
                 new_interval.append((-1000, 1000))
             else:
+                col_count += 1
                 new_interval.append((min(i[0], j[0]), max(i[1], j[1])))
+
+        if col_count < 6:
+            bot = MaxLengthIntervalPattern.bottom(new_interval)
+            return bot
         '''
         if bottom:
             bot = MaxLengthIntervalPattern.bottom(new_interval)
@@ -122,6 +129,3 @@ class MaxLengthIntervalPattern(IntervalPattern):
 
         return new_interval
 
-    '''@classmethod
-    def leq(cls, desc1, desc2):
-        return True'''
