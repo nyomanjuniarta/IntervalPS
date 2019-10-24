@@ -23,7 +23,7 @@ from fca.io.input_models import FormalContextModel
 from time import time
 
 
-def exec_ex6(filepath, theta):
+def exec_ex6(filepath, theta, min_col):
     """
     Execute CbO over pattern structures
 
@@ -32,6 +32,7 @@ def exec_ex6(filepath, theta):
     """
     fctx = FormalContextModel(filepath=filepath, transformer=List2IntervalsTransformer(int))
     MaxLengthIntervalPattern.THETA = theta
+    MaxLengthIntervalPattern.MIN_COL = min_col
     dict_printer(PSCbO(fctx, pattern=MaxLengthIntervalPattern, lazy=False, silent=False).poset, transposed=True)
 
 
@@ -40,8 +41,9 @@ if __name__ == '__main__':
     __parser__ = argparse.ArgumentParser(description='Example 6 - Interval with theta value with CbO')
     __parser__.add_argument('context_path', metavar='context_path', type=str, help='path to the formal context')
     __parser__.add_argument('-t', '--theta', metavar='theta', type=int, help='Maximal length for intervals [0,inf]', default=0)
+    __parser__.add_argument('-c', '--min_col', metavar='min_col', type=int, help='Minimal number of columns in a bicluster', default=0)
     __args__ = __parser__.parse_args()
-    exec_ex6(__args__.context_path, __args__.theta)
+    exec_ex6(__args__.context_path, __args__.theta, __args__.min_col)
     end_time = time()
     print(end_time - start_time)
 # okay decompiling ex6_cbo_ps.pyc

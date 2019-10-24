@@ -65,7 +65,7 @@ if __name__ == "__main__":
     stop = 10
     while stop > 0:
         end_time = time()
-        if (end_time - start_time) > 180:
+        if (end_time - start_time) > 300:
             break
         chosen_index, weight = weighted_choice(weights, total_weight)
         chosen_pattern = pattern_combination2[chosen_index]

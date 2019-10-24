@@ -95,6 +95,7 @@ class MaxLengthIntervalPattern(IntervalPattern):
     to allow for a similarity thresholding of each individual interval
     """
     THETA = 0
+    MIN_COL = 2
 
     @classmethod
     def intersection(cls, desc1, desc2):
@@ -118,7 +119,7 @@ class MaxLengthIntervalPattern(IntervalPattern):
                 col_count += 1
                 new_interval.append((min(i[0], j[0]), max(i[1], j[1])))
 
-        if col_count < 6:
+        if col_count < MaxLengthIntervalPattern.MIN_COL:
             bot = MaxLengthIntervalPattern.bottom(new_interval)
             return bot
         '''
