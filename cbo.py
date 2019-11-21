@@ -21,9 +21,9 @@ def process(A, g, concept, start_time):  # see thesis of Kaytoue
     less_than_g = set(filter(lambda x: x < g, C_minus_A))
     if len(less_than_g) == 0:
         if len(concept.objects) >= concept.cfg.min_row:
-            mse = calculate_mse(concept.objects, concept.col_list())
-            #f_out.write(str(concept) + '|' + str(len(concept.objects)) + '|' + str(concept.objects) + '\n')
-            f_out.write(str("{:.3f}".format(mse)) + ' ' + str(len(concept.objects)) + 'x' + str(len(concept.col_list())) + str(concept.objects) + ' ' + str(concept.col_list()) + '\n')
+            f_out.write(str(concept) + '|' + str(len(concept.objects)) + '|' + str(concept.objects) + '\n')
+            #mse = calculate_mse(concept.objects, concept.col_list())
+            #f_out.write(str("{:.3f}".format(mse)) + ' ' + str(len(concept.objects)) + 'x' + str(len(concept.col_list())) + str(concept.objects) + ' ' + str(concept.col_list()) + '\n')
             concept_count += 1
             if concept_count == 10 or concept_count == 100 or concept_count == 500:
                 f_out.write('check point ' + str(concept_count) + ' ' + str(time() - start_time) + '\n')
@@ -160,7 +160,7 @@ if __name__ == "__main__":
             candidate_concept.intervals = list(i.intervals)
             candidate_concept.objects = closure(i, set(i.objects))
             process(set(i.objects), i.objects[0], candidate_concept, start_time)
-            print(time() - start_iter)
+            # print(time() - start_iter)
 
     else:
         column_count = 0

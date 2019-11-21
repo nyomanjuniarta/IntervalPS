@@ -11,10 +11,11 @@ if __name__ == "__main__":
     __parser__.add_argument('-t', '--theta', metavar='theta', type=float, help='Maximal length for intervals [0,inf]', default=1)
     __parser__.add_argument('-c', '--min_columns', metavar='min_columns', type=int, help='minimum number of columns', default=1)
     __parser__.add_argument('-r', '--min_rows', metavar='min_rows', type=int, help='minimum number of rows', default=1)
+    __parser__.add_argument('-mp', '--maximality_pruning', metavar='maximality_pruning', type=int, help='1 = prune if the concept is not a maximal bicluster', default=0)
     __args__ = __parser__.parse_args()
 
     cfg = PatternConfig(theta=__args__.theta, min_col=__args__.min_columns)
-
+    pruning = __args__.maximality_pruning
     with open(__args__.context_path, 'r') as f:
         L = init_diagram()
         # print_lattice(L, path + '_lattice.txt')
@@ -24,7 +25,7 @@ if __name__ == "__main__":
             raw_entry = line.replace('\n', '').replace('\r', '')
             pattern = Pattern(instance=raw_entry, config=cfg, object=object_id)
             # print 'interval', pattern
-            object_concept_id = add_intent(pattern, -1, L, 0, max)
+            object_concept_id = add_intent(pattern, -1, L, 0, pruning)
             add_object(object_concept_id, object_id, L)
             clean_flags(L, object_concept_id)
     L = L.reverse()
